@@ -67,22 +67,32 @@ class Moves(object):
 
 
     def k(self):
-        """Checks whether the move is valid if the piece is a knight"""
+        """Checks whether the move is valid if the piece is a knight. Makes a
+        list of all the possible moves, and then filters out the ones that are
+        of the board."""
+
         x, y = self.fr_x, self.fr_y
         moves = list(product([x-1, x+1], [y-2, y+2])) + list(product([x-2,x+2], [y-1,y+1]))
-        moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
+        valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
 
-        return (self.to_x, self.to_y) in moves
+        return (self.to_x, self.to_y) in valid_moves
+
 
     def b(self):
-        x, y = self.x, self.y
+        """Checks whether the move is valid if the piece is a bishop. Makes a
+        list of all the possible moves, and then filters out the ones that are
+        of the board. """
+        # TODO: build in collision detection
 
-        for i in range(8):
-            for y in range(8):
-                moves_up = [x]
+        x, y = self.fr_x, self.fr_y
+        moves = []
+        for i in range(1, 8): # 0 is its own position
+            moves += list(product([x-i, x+i], [y-i, y+i]))
+        valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
 
-        return(dia_1)
+        return (self.to_x, self.to_y) in valid_moves
 
-M = Moves(create_board(), "b1", "d2", "w")
 
-print(M.k())
+M = Moves(create_board(), "c3", "e5", "w")
+
+print(M.b())
