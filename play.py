@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from itertools import product
-from itertools import count
 
 # TODO: Ask for input from player
 # TODO: If position is valid, update board
@@ -68,8 +67,8 @@ class Moves(object):
             else:
                 break
 
-    def check_rook(self, dist): # Check if desired rook is in starting position
-        return self.board[self.fr_y][self.fr_x+dist] is self.pieces['rook']
+    def check_rook(self, d): # Check if desired rook is in starting position
+        return self.board[self.fr_y][self.fr_x+d] is self.pieces['rook']
 
     def no_castling_block(self, d): # Check if no pieces between king & castle
         for x in range(self.fr_x+d, self.to_x, d):
@@ -81,7 +80,6 @@ class Moves(object):
         if self.to_x > self.fr_x:       # castling kingside
             if self.check_rook(3) and self.no_castling_block(1):
                 moves.append((self.fr_x+2, self.fr_y))
-
         else:                           # castling queenside
             if self.check_rook(-4) and self.no_castling_block(-1):
                 moves.append((self.fr_x-2, self.fr_y))
@@ -89,7 +87,7 @@ class Moves(object):
     ### FUNCTIONS PER PIECE ###
 
     def r(self):
-        """Checks whether the move is valid if the piece is a rook"""
+        """Checks whether the move is valid if the piece is a rook."""
 
         # lists possible positions for a move in every direction
         right = range(self.fr_x+1, self.to_x)
@@ -110,8 +108,7 @@ class Moves(object):
 
     def k(self):
         """Checks whether the move is valid if the piece is a knight. Makes a
-        list of all the possible moves, and then filters out the ones that are
-        of the board."""
+        list of all the possible moves."""
 
         x, y = self.fr_x, self.fr_y
         moves = list(product([x-1, x+1], [y-2, y+2])) + list(product([x-2,x+2], [y-1,y+1]))
@@ -122,8 +119,7 @@ class Moves(object):
 
     def b(self):
         """Checks whether the move is valid if the piece is a bishop. Makes a
-        list of all the possible moves, and then filters out the ones that are
-        of the board. """
+        list of all the possible moves."""
 
         moves = []
         for direction in list(product([-1, 1], [-1, 1])):
@@ -133,19 +129,17 @@ class Moves(object):
 
 
     def q(self):
-        """If horizontal or vertical, follows rook, else bishop"""
+        """If horizontal or vertical, follows rook, else bishop."""
         return r() if self.fr_y == self.to_y or self.fr_x == self.to_x else b()
 
 
     def x(self):
         """Checks whether the move is valid if the piece is a king. Makes a
-        list of all the possible moves, and then filters out the ones that are
-        off the board. """
+        list of all the possible moves. Also checks castling possibilities"""
 
         x, y = self.fr_x, self.fr_y
         moves = list(product([x, x-1, x+1], [y, y-1, y+1]))
 
-        # In case of castling, checks if this is a valid move at this moment
         if (self.to_x, self.to_y) == (x-2, y) or (x+2, y):
             self.castling(moves)
 
@@ -153,27 +147,31 @@ class Moves(object):
 
 
     def p(self):
+        """Checks wheters the move is valid if the piece is a pawn. Checks all
+        cases separately, and ultimately if it's the first turn, since a pawn
+        can then move two tiles ahead."""
+
         x, y = self.fr_x, self.fr_y
-
         moves = []
+        d = -1 if self.player == 'w' else 1
 
-        if self.board[y-1][x] is '.':
-            moves.append((x, y-1))
+        if self.board[y+d][x] is '.':
+            moves.append((x, y+d))
 
-        if self.board[y-1][x-1] is not '.':
-            moves.append((x-1, y-1))
+        if self.board[y+d][x-1] is not '.':
+            moves.append((x-1, y+d))
 
-        if self.board[y-1][x+1] is not '.':
-            moves.append((x+1, y-1))
+        if self.board[y+d][x+1] is not '.':
+            moves.append((x+1, y+d))
 
-        if self.move == '0' or '1':
-            moves.append((x, y-2))
+        if (self.move == '0' or '1') and (self.board[y+d*2][x] is '.'):
+            moves.append((x, y+d*2))
 
         return (self.to_x, self.to_y) in moves
 
 
-M = Moves(create_board(), "e1", "g1", "w", 1)
+M = Moves(create_board(), "f7", "f5", "b", 1)
 
 
 
-print(M.x())
+print(M.p())
