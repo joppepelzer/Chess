@@ -28,17 +28,19 @@ class Moves(object):
         self.player = player
         self.move = move
 
+        if player == 'w':
+            self.pieces = {'rook': 'R', 'knight': 'K', 'bishop': 'B',
+                           'queen': 'Q', 'king': 'X', 'pawn': 'P'}
+        else:
+            self.pieces = {'rook': 'r', 'knight': 'k', 'bishop': 'b',
+                           'queen': 'q', 'king': 'x', 'pawn': 'p'}
+
         if fr == to:
             raise Exception("You cannot move to the same tile.")
 
-        # check if the player is not trying to move a piece onto a tile where
-        # they have one of their own pieces
-        if player == 'w':
-            if board[self.to_y][self.to_x].isupper():
-                raise Exception("You cannot move onto yourself!")
-        else:
-            if board[self.to_y][self.to_x].islower():
-                raise Exception("You cannot move onto yourself!")
+        # check if moving onto self
+        if board[self.to_y][self.to_x] in self.pieces.values():
+            raise Exception("You cannot move onto yourself!")
 
     ### HELPER FUNCTIONS ###
 
@@ -60,11 +62,29 @@ class Moves(object):
             if 0 <= new_x < 8 and 0 <= new_y < 8:
                 if self.board[new_y][new_x] is '.':
                     moves.append((new_x, new_y))
-                if self.board[new_y][new_x].islower():
+                if self.board[new_y][new_x] not in self.pieces.values():
                     moves.append((new_x, new_y))
                     break
             else:
                 break
+
+    def check_rook(self, dist): # Check if desired rook is in starting position
+        return self.board[self.fr_y][self.fr_x+dist] is self.pieces['rook']
+
+    def no_castling_block(self, d): # Check if no pieces between king & castle
+        for x in range(self.fr_x+d, self.to_x, d):
+            if self.board[self.fr_y][x] is not '.':
+                return False
+            return True
+
+    def castling(self, moves): # Check if castling is a valid move at the moment
+        if self.to_x > self.fr_x:       # castling kingside
+            if self.check_rook(3) and self.no_castling_block(1):
+                moves.append((self.fr_x+2, self.fr_y))
+
+        else:                           # castling queenside
+            if self.check_rook(-4) and self.no_castling_block(-1):
+                moves.append((self.fr_x-2, self.fr_y))
 
     ### FUNCTIONS PER PIECE ###
 
@@ -117,9 +137,6 @@ class Moves(object):
         return r() if self.fr_y == self.to_y or self.fr_x == self.to_x else b()
 
 
-    def castling(self, moves):
-            print('croix')
-
     def x(self):
         """Checks whether the move is valid if the piece is a king. Makes a
         list of all the possible moves, and then filters out the ones that are
@@ -127,8 +144,8 @@ class Moves(object):
 
         x, y = self.fr_x, self.fr_y
         moves = list(product([x, x-1, x+1], [y, y-1, y+1]))
-        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8
 
+        # In case of castling, checks if this is a valid move at this moment
         if (self.to_x, self.to_y) == (x-2, y) or (x+2, y):
             self.castling(moves)
 
