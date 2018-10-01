@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from itertools import product
+from itertools import count
 
 # TODO: Ask for input from player
 # TODO: If position is valid, update board
@@ -24,7 +25,6 @@ class Moves(object):
         self.fr_y = number_to_index[fr[1]]
         self.to_x = index_to_letter[to[0]]
         self.to_y = number_to_index[to[1]]
-        self.piece = board[self.fr_x][self.fr_y]
         self.player = player
         self.move = move
 
@@ -40,6 +40,7 @@ class Moves(object):
             if board[self.to_y][self.to_x].islower():
                 raise Exception("You cannot move onto yourself!")
 
+    ### HELPER FUNCTIONS ###
 
     def rook_horizontal(self, direction):
         for i in direction:
@@ -50,6 +51,22 @@ class Moves(object):
         for i in direction:
             if self.board[i][self.fr_x] is not ".":
                 return False
+
+    def bishop_moves(self, direction, moves):
+        """Checks all bishop moves that don't collide"""
+        for i in range(1, 8):
+            new_x = self.fr_x + direction[0] * i
+            new_y = self.fr_y + direction[1] * i
+            if 0 <= new_x < 8 and 0 <= new_y < 8:
+                if self.board[new_y][new_x] is '.':
+                    moves.append((new_x, new_y))
+                if self.board[new_y][new_x].islower():
+                    moves.append((new_x, new_y))
+                    break
+            else:
+                break
+
+    ### FUNCTIONS PER PIECE ###
 
     def r(self):
         """Checks whether the move is valid if the piece is a rook"""
@@ -87,13 +104,10 @@ class Moves(object):
         """Checks whether the move is valid if the piece is a bishop. Makes a
         list of all the possible moves, and then filters out the ones that are
         of the board. """
-        # TODO: build in collision detection
 
-        x, y = self.fr_x, self.fr_y
         moves = []
-        for i in range(1, 8): # 0 is its own position
-            moves += list(product([x-i, x+i], [y-i, y+i]))
-        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
+        for direction in list(product([-1, 1], [-1, 1])):
+            self.bishop_moves(direction, moves)
 
         return (self.to_x, self.to_y) in moves
 
@@ -103,6 +117,9 @@ class Moves(object):
         return r() if self.fr_y == self.to_y or self.fr_x == self.to_x else b()
 
 
+    def castling(self, moves):
+            print('croix')
+
     def x(self):
         """Checks whether the move is valid if the piece is a king. Makes a
         list of all the possible moves, and then filters out the ones that are
@@ -110,7 +127,10 @@ class Moves(object):
 
         x, y = self.fr_x, self.fr_y
         moves = list(product([x, x-1, x+1], [y, y-1, y+1]))
-        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
+        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8
+
+        if (self.to_x, self.to_y) == (x-2, y) or (x+2, y):
+            self.castling(moves)
 
         return (self.to_x, self.to_y) in moves
 
@@ -135,8 +155,8 @@ class Moves(object):
         return (self.to_x, self.to_y) in moves
 
 
-M = Moves(create_board(), "a6", "f6", "w", 1)
+M = Moves(create_board(), "e1", "g1", "w", 1)
 
 
 
-print(M.r())
+print(M.x())
