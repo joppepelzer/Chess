@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from itertools import product
 
+# TODO: Error handling for positions outsde the board
+
 def create_board():
     board = [["."] * 8 for _ in range(8)]
     board[0] = ["r", "k", "b", "q", "k", "b", "k", "r"]
@@ -22,7 +24,6 @@ class Moves(object):
         self.to_y = number_to_index[to[1]]
         self.piece = board[self.fr_x][self.fr_y]
         self.player = player
-
 
         if fr == to:
             raise Exception("You cannot move to the same tile.")
@@ -73,9 +74,9 @@ class Moves(object):
 
         x, y = self.fr_x, self.fr_y
         moves = list(product([x-1, x+1], [y-2, y+2])) + list(product([x-2,x+2], [y-1,y+1]))
-        valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
+        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
 
-        return (self.to_x, self.to_y) in valid_moves
+        return (self.to_x, self.to_y) in moves
 
 
     def b(self):
@@ -88,11 +89,30 @@ class Moves(object):
         moves = []
         for i in range(1, 8): # 0 is its own position
             moves += list(product([x-i, x+i], [y-i, y+i]))
-        valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
+        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
 
         return (self.to_x, self.to_y) in valid_moves
 
+    def q(self):
+        pass
 
-M = Moves(create_board(), "c3", "e5", "w")
+    def K(self):
+        """Checks whether the move is valid if the piece is a king. Makes a
+        list of all the possible moves, and then filters out the ones that are
+        of the board. """
 
-print(M.b())
+        x, y = self.fr_x, self.fr_y
+        moves = list(product([x, x-1, x+1], [y, y-1, y+1]))
+        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
+        print(moves)
+
+        return (self.to_x, self.to_y) in moves
+
+
+    def p(self):
+        pass
+
+
+M = Moves(create_board(), "c3", "c12", "w")
+
+print(M.K())
