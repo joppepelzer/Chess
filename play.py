@@ -28,9 +28,6 @@ class Moves(object):
         self.player = player
         self.move = move
 
-        for i in board:
-            print(i)
-
         if fr == to:
             raise Exception("You cannot move to the same tile.")
 
@@ -38,34 +35,35 @@ class Moves(object):
         # they have one of their own pieces
         if player == 'w':
             if board[self.to_y][self.to_x].isupper():
-                raise Exception("Invalid move, try again.")
+                raise Exception("You cannot move onto yourself!")
         else:
             if board[self.to_y][self.to_x].islower():
-                raise Exception("Invalid move, try again.")
+                raise Exception("You cannot move onto yourself!")
 
+
+    def rook_horizontal(self, direction):
+        for i in direction:
+            if self.board[self.fr_y][i] is not ".":
+                return False
+
+    def rook_vertical(self, direction):
+        for i in direction:
+            if self.board[i][self.fr_x] is not ".":
+                return False
 
     def r(self):
         """Checks whether the move is valid if the piece is a rook"""
 
-        if self.fr_y == self.to_y:                      # horizontal move
-            if self.fr_x < self.to_x:                   # move right
-                for i in range(self.fr_x+1, self.to_x):
-                    if self.board[self.fr_y][i] is not ".":
-                        return False
-            else:                                       # move left
-                for i in range(self.fr_x-1, self.to_x, -1):
-                    if self.board[self.fr_y][i] is not ".":
-                        return False
+        # lists possible positions for a move in every direction
+        right = range(self.fr_x+1, self.to_x)
+        left  = range(self.fr_x-1, self.to_x, -1)
+        up    = range(self.fr_y-1, self.to_y, -1)
+        down  = range(self.fr_y+1, self.to_y)
 
-        elif self.fr_x == self.to_x:                    # vertical move
-            if self.fr_y < self.to_y:                   # move down
-                for i in range(self.fr_y+1, self.to_y):
-                    if self.board[i][self.fr_x] is not ".":
-                        return False
-            else:                                       # move up
-                for i in range(self.fr_y-1, self.to_y, -1):
-                    if self.board[i][self.fr_x] is not ".":
-                        return False
+        if self.fr_y == self.to_y:               # horizontal move
+            self.rook_horizontal(right if self.fr_x < self.to_x else left)
+        elif self.fr_x == self.to_x:             # vertical move
+            self.rook_vertical(down if self.fr_y < self.to_y else up)
 
         else: #not a valid tower move
             return False
@@ -99,8 +97,11 @@ class Moves(object):
 
         return (self.to_x, self.to_y) in moves
 
+
     def q(self):
-        pass
+        """If horizontal or vertical, follows rook, else bishop"""
+        return r() if self.fr_y == self.to_y or self.fr_x == self.to_x else b()
+
 
     def x(self):
         """Checks whether the move is valid if the piece is a king. Makes a
@@ -125,7 +126,7 @@ class Moves(object):
         if self.board[y-1][x-1] is not '.':
             moves.append((x-1, y-1))
 
-        if self.board[y+1][x-1] is not '.':
+        if self.board[y-1][x+1] is not '.':
             moves.append((x+1, y-1))
 
         if self.move == '0' or '1':
@@ -134,8 +135,8 @@ class Moves(object):
         return (self.to_x, self.to_y) in moves
 
 
-M = Moves(create_board(), "b2", "b4", "w", 1)
+M = Moves(create_board(), "a6", "f6", "w", 1)
 
 
 
-print(M.p())
+print(M.r())
