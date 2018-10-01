@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 from itertools import product
 
+# TODO: Ask for input from player
+# TODO: If position is valid, update board
 # TODO: Error handling for positions outsde the board
 
 def create_board():
     board = [["."] * 8 for _ in range(8)]
-    board[0] = ["r", "k", "b", "q", "k", "b", "k", "r"]
+    board[0] = ["r", "k", "b", "q", "x", "b", "k", "r"]
     board[1] = ["p", "p", "p", "p", "p", "p", "p", "p"]
     board[6] = ["P", "P", "P", "P", "P", "P", "P", "P"]
-    board[7] = ["R", "K", "B", "Q", "K", "B", "K", "R"]
+    board[7] = ["R", "K", "B", "Q", "X", "B", "K", "R"]
     return board
 
 index_to_letter = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, "f":5, 'g':6, 'h':7}
@@ -16,7 +18,7 @@ number_to_index = {'8':0, '7':1, '6':2, '5':3, '4':4, "3":5, '2':6, '1':7}
 
 class Moves(object):
 
-    def __init__(self, board, fr, to, player):
+    def __init__(self, board, fr, to, player, move):
         self.board = board
         self.fr_x = index_to_letter[fr[0]]
         self.fr_y = number_to_index[fr[1]]
@@ -24,6 +26,10 @@ class Moves(object):
         self.to_y = number_to_index[to[1]]
         self.piece = board[self.fr_x][self.fr_y]
         self.player = player
+        self.move = move
+
+        for i in board:
+            print(i)
 
         if fr == to:
             raise Exception("You cannot move to the same tile.")
@@ -91,28 +97,45 @@ class Moves(object):
             moves += list(product([x-i, x+i], [y-i, y+i]))
         # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
 
-        return (self.to_x, self.to_y) in valid_moves
+        return (self.to_x, self.to_y) in moves
 
     def q(self):
         pass
 
-    def K(self):
+    def x(self):
         """Checks whether the move is valid if the piece is a king. Makes a
         list of all the possible moves, and then filters out the ones that are
-        of the board. """
+        off the board. """
 
         x, y = self.fr_x, self.fr_y
         moves = list(product([x, x-1, x+1], [y, y-1, y+1]))
         # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
-        print(moves)
 
         return (self.to_x, self.to_y) in moves
 
 
     def p(self):
-        pass
+        x, y = self.fr_x, self.fr_y
+
+        moves = []
+
+        if self.board[y-1][x] is '.':
+            moves.append((x, y-1))
+
+        if self.board[y-1][x-1] is not '.':
+            moves.append((x-1, y-1))
+
+        if self.board[y+1][x-1] is not '.':
+            moves.append((x+1, y-1))
+
+        if self.move == '0' or '1':
+            moves.append((x, y-2))
+
+        return (self.to_x, self.to_y) in moves
 
 
-M = Moves(create_board(), "c3", "c12", "w")
+M = Moves(create_board(), "b2", "b4", "w", 1)
 
-print(M.K())
+
+
+print(M.p())
