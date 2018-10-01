@@ -1,9 +1,6 @@
 #!/usr/bin/env python
-from itertools import product
 
-# TODO: Ask for input from player
-# TODO: If position is valid, update board
-# TODO: Error handling for positions outsde the board
+import moves
 
 def create_board():
     board = [["."] * 8 for _ in range(8)]
@@ -11,167 +8,46 @@ def create_board():
     board[1] = ["p", "p", "p", "p", "p", "p", "p", "p"]
     board[6] = ["P", "P", "P", "P", "P", "P", "P", "P"]
     board[7] = ["R", "K", "B", "Q", "X", "B", "K", "R"]
+
     return board
 
-index_to_letter = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, "f":5, 'g':6, 'h':7}
-number_to_index = {'8':0, '7':1, '6':2, '5':3, '4':4, "3":5, '2':6, '1':7}
 
-class Moves(object):
+def get_request():
+    fr = input("what piece do you wish to move? ")
+    to = input("whereto do you wish to move it? ")
 
-    def __init__(self, board, fr, to, player, move):
-        self.board = board
-        self.fr_x = index_to_letter[fr[0]]
-        self.fr_y = number_to_index[fr[1]]
-        self.to_x = index_to_letter[to[0]]
-        self.to_y = number_to_index[to[1]]
-        self.player = player
-        self.move = move
+    if fr == to:
+        raise Exception("You cannot move to the same tile.")
 
-        if player == 'w':
-            self.pieces = {'rook': 'R', 'knight': 'K', 'bishop': 'B',
-                           'queen': 'Q', 'king': 'X', 'pawn': 'P'}
-        else:
-            self.pieces = {'rook': 'r', 'knight': 'k', 'bishop': 'b',
-                           'queen': 'q', 'king': 'x', 'pawn': 'p'}
+    # Position conversion to matrix indices
+    letter_to_index = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, "f":5, 'g':6, 'h':7}
+    number_to_index = {'8':0, '7':1, '6':2, '5':3, '4':4, "3":5, '2':6, '1':7}
 
-        if fr == to:
-            raise Exception("You cannot move to the same tile.")
+    fr = (letter_to_index[fr[0]], number_to_index[fr[1]])
+    to = (letter_to_index[to[0]], number_to_index[to[1]])
 
-        # check if moving onto self
-        if board[self.to_y][self.to_x] in self.pieces.values():
-            raise Exception("You cannot move onto yourself!")
-
-    ### HELPER FUNCTIONS ###
-
-    def rook_horizontal(self, direction):
-        for i in direction:
-            if self.board[self.fr_y][i] is not ".":
-                return False
-
-    def rook_vertical(self, direction):
-        for i in direction:
-            if self.board[i][self.fr_x] is not ".":
-                return False
-
-    def bishop_moves(self, direction, moves):
-        """Checks all bishop moves that don't collide"""
-        for i in range(1, 8):
-            new_x = self.fr_x + direction[0] * i
-            new_y = self.fr_y + direction[1] * i
-            if 0 <= new_x < 8 and 0 <= new_y < 8:
-                if self.board[new_y][new_x] is '.':
-                    moves.append((new_x, new_y))
-                if self.board[new_y][new_x] not in self.pieces.values():
-                    moves.append((new_x, new_y))
-                    break
-            else:
-                break
-
-    def check_rook(self, d): # Check if desired rook is in starting position
-        return self.board[self.fr_y][self.fr_x+d] is self.pieces['rook']
-
-    def no_castling_block(self, d): # Check if no pieces between king & castle
-        for x in range(self.fr_x+d, self.to_x, d):
-            if self.board[self.fr_y][x] is not '.':
-                return False
-            return True
-
-    def castling(self, moves): # Check if castling is a valid move at the moment
-        if self.to_x > self.fr_x:       # castling kingside
-            if self.check_rook(3) and self.no_castling_block(1):
-                moves.append((self.fr_x+2, self.fr_y))
-        else:                           # castling queenside
-            if self.check_rook(-4) and self.no_castling_block(-1):
-                moves.append((self.fr_x-2, self.fr_y))
-
-    ### FUNCTIONS PER PIECE ###
-
-    def r(self):
-        """Checks whether the move is valid if the piece is a rook."""
-
-        # lists possible positions for a move in every direction
-        right = range(self.fr_x+1, self.to_x)
-        left  = range(self.fr_x-1, self.to_x, -1)
-        up    = range(self.fr_y-1, self.to_y, -1)
-        down  = range(self.fr_y+1, self.to_y)
-
-        if self.fr_y == self.to_y:               # horizontal move
-            self.rook_horizontal(right if self.fr_x < self.to_x else left)
-        elif self.fr_x == self.to_x:             # vertical move
-            self.rook_vertical(down if self.fr_y < self.to_y else up)
-
-        else: #not a valid tower move
-            return False
-
-        return True
+    return fr, to
 
 
-    def k(self):
-        """Checks whether the move is valid if the piece is a knight. Makes a
-        list of all the possible moves."""
+def check_validity(M, piece):
+    return M.p() if piece == 'p' else print('nah')
 
-        x, y = self.fr_x, self.fr_y
-        moves = list(product([x-1, x+1], [y-2, y+2])) + list(product([x-2,x+2], [y-1,y+1]))
-        # valid_moves = [(x,y) for x,y in moves if 0 <= x < 8 and 0 <= y < 8]
+def play(board, fr, to, piece):
 
-        return (self.to_x, self.to_y) in moves
+    M = moves.Moves(board, fr, to, "b", 1)
 
-
-    def b(self):
-        """Checks whether the move is valid if the piece is a bishop. Makes a
-        list of all the possible moves."""
-
-        moves = []
-        for direction in list(product([-1, 1], [-1, 1])):
-            self.bishop_moves(direction, moves)
-
-        return (self.to_x, self.to_y) in moves
+    if check_validity(M, piece.lower()):
+        print("HALLELOO")
 
 
-    def q(self):
-        """If horizontal or vertical, follows rook, else bishop."""
-        return r() if self.fr_y == self.to_y or self.fr_x == self.to_x else b()
+    return board
 
+def main():
+    board = create_board()
+    fr, to = get_request()
+    piece = board[fr[1]][fr[0]] # reversed indexing because of matrix
 
-    def x(self):
-        """Checks whether the move is valid if the piece is a king. Makes a
-        list of all the possible moves. Also checks castling possibilities"""
+    # while not checkmate():
+    play(board, fr, to, piece)
 
-        x, y = self.fr_x, self.fr_y
-        moves = list(product([x, x-1, x+1], [y, y-1, y+1]))
-
-        if (self.to_x, self.to_y) == (x-2, y) or (x+2, y):
-            self.castling(moves)
-
-        return (self.to_x, self.to_y) in moves
-
-
-    def p(self):
-        """Checks wheters the move is valid if the piece is a pawn. Checks all
-        cases separately, and ultimately if it's the first turn, since a pawn
-        can then move two tiles ahead."""
-
-        x, y = self.fr_x, self.fr_y
-        moves = []
-        d = -1 if self.player == 'w' else 1
-
-        if self.board[y+d][x] is '.':
-            moves.append((x, y+d))
-
-        if self.board[y+d][x-1] is not '.':
-            moves.append((x-1, y+d))
-
-        if self.board[y+d][x+1] is not '.':
-            moves.append((x+1, y+d))
-
-        if (self.move == '0' or '1') and (self.board[y+d*2][x] is '.'):
-            moves.append((x, y+d*2))
-
-        return (self.to_x, self.to_y) in moves
-
-
-M = Moves(create_board(), "f7", "f5", "b", 1)
-
-
-
-print(M.p())
+main()
