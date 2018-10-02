@@ -116,7 +116,7 @@ class Moves(object):
 
     def q(self):
         """If horizontal or vertical, follows rook, else bishop."""
-        return r() if self.fr_y == self.to_y or self.fr_x == self.to_x else b()
+        return self.r() if self.fr_y == self.to_y or self.fr_x == self.to_x else self.b()
 
 
     def x(self):

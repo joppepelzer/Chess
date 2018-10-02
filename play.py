@@ -30,15 +30,33 @@ def get_request():
 
 
 def check_validity(M, piece):
-    return M.p() if piece == 'p' else print('nah')
 
-def play(board, fr, to, piece):
+    pieces = ['p', 'r', 'k', 'b', 'q', 'x']
+    function = [M.p(), M.r(), M.k(), M.b(), M.q(), M.x()]
 
-    M = moves.Moves(board, fr, to, "b", 1)
+    return function[pieces.index(piece)]
+
+
+def checkmate():
+    pass
+
+
+def print_board(board):
+    for row in board:
+        print(row)
+
+
+def play(board, fr, to, piece, colour):
+
+    M = moves.Moves(board, fr, to, colour, 1)
 
     if check_validity(M, piece.lower()):
-        print("HALLELOO")
+         board[to[1]][to[0]] = board[fr[1]][fr[0]]
+         board[fr[1]][fr[0]] = '.'
 
+    checkmate()
+
+    print_board(board)
 
     return board
 
@@ -46,8 +64,8 @@ def main():
     board = create_board()
     fr, to = get_request()
     piece = board[fr[1]][fr[0]] # reversed indexing because of matrix
-
+    off_board = []
     # while not checkmate():
-    play(board, fr, to, piece)
+    play(board, fr, to, piece, 'b')
 
 main()
