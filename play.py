@@ -12,12 +12,13 @@ def create_board():
     return board
 
 
-def get_request():
-    fr = input("what piece do you wish to move? ")
-    to = input("whereto do you wish to move it? ")
+def get_request(colour, move_count):
 
-    if fr == to:
-        raise Exception("You cannot move to the same tile.")
+    if move_count > 0:
+        print("{}, it's your turn. ".format(colour))
+
+    fr = input("What piece do you wish to move? ").lower()
+    to = input("Whereto do you wish to move it? ").lower()
 
     # Position conversion to matrix indices
     letter_to_index = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, "f":5, 'g':6, 'h':7}
@@ -31,7 +32,7 @@ def get_request():
 
 def check_validity(M, piece):
 
-    pieces = ['p', 'r', 'k', 'b', 'q', 'x']
+    pieces   = ['p', 'r', 'k', 'b', 'q', 'x']
     function = [M.p(), M.r(), M.k(), M.b(), M.q(), M.x()]
 
     return function[pieces.index(piece)]
@@ -42,30 +43,65 @@ def checkmate():
 
 
 def print_board(board):
+    print('')
     for row in board:
         print(row)
+    print('')
 
 
-def play(board, fr, to, piece, colour):
+def play(board, fr, to, colour, move_count):
 
-    M = moves.Moves(board, fr, to, colour, 1)
+    M = moves.Moves(board, fr, to, colour, move_count)
+    piece = board[fr[1]][fr[0]] # reversed indexing because of matrix
 
     if check_validity(M, piece.lower()):
          board[to[1]][to[0]] = board[fr[1]][fr[0]]
          board[fr[1]][fr[0]] = '.'
+         kicked_off          = board[to[1]][to[0]]
+    else:
+        return False
 
     checkmate()
-
     print_board(board)
 
     return board
 
+
 def main():
     board = create_board()
-    fr, to = get_request()
-    piece = board[fr[1]][fr[0]] # reversed indexing because of matrix
+    print_board(board)
+    move_count = 0
     off_board = []
-    # while not checkmate():
-    play(board, fr, to, piece, 'b')
 
-main()
+    print("\nWhite, you play with capital letters, you can start.")
+
+    while move_count < 10:
+        colour = 'White' if move_count % 2 == 0 else 'Black'
+
+        while True:
+            fr, to = get_request(colour, move_count)
+            pieces = {i: i[0] if colour == 'White' else i[0].upper()
+                for i in ['rook', 'knight', 'bishop', 'queen', 'king', 'pawn']}
+
+            if board[fr[1]][fr[0]] == '.':
+                print("There is no piece at this position, try again!")
+                continue
+
+            if board[to[1]][to[0]] in pieces.values():
+                print("You cannot move onto yourself, try again!")
+                continue
+
+            board = play(board, fr, to, colour, move_count)
+
+            if not board:
+                print("That's not a valid move, try again!")
+                continue
+
+
+
+        # off_board.append(kicked_off)
+        move_count += 1
+
+
+if __name__ == "__main__":
+    main()

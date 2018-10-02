@@ -20,12 +20,8 @@ class Moves(object):
         self.to_y = to[1]
         self.player = player
         self.move_count = move_count
-
-        self.pieces = {i: i[0] if player == 'w' else i[0].upper()
+        self.pieces = {i: i[0] if player == 'White' else i[0].upper()
             for i in ['rook','knight', 'bishop', 'queen','king', 'pawn']}
-
-        if board[self.to_y][self.to_x] in self.pieces.values():
-            raise Exception("You cannot move onto yourself!")
 
     ### HELPER FUNCTIONS ###
 
@@ -139,7 +135,7 @@ class Moves(object):
 
         x, y = self.fr_x, self.fr_y
         moves = []
-        d = -1 if self.player == 'w' else 1
+        d = -1 if self.player == 'White' else 1
 
         if self.board[y+d][x] is '.':
             moves.append((x, y+d))
@@ -150,7 +146,8 @@ class Moves(object):
         if self.board[y+d][x+1] is not '.':
             moves.append((x+1, y+d))
 
-        if (self.move_count == '0' or '1') and (self.board[y+d*2][x] is '.'):
+            # TODO: collision for double move
+        if (self.move_count == '0' or '1') and (self.board[self.to_y][self.to_x] == '.'):
             moves.append((x, y+d*2))
 
         return (self.to_x, self.to_y) in moves
